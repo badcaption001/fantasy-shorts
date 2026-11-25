@@ -13,9 +13,9 @@ def secret(name):
     return v
 
 
-CF_ACC = secret("CF_ACCOUNT_ID")
-CF_TOK = secret("CF_API_TOKEN")
-GEM = secret("GEMINI_API_KEY")
+CF_ACC = secret("40078b2b012400d21aaff3c8ab8fe540")
+CF_TOK = secret("cfut_HSBI7SaFP4S8hOgGKcyjV04I14xX4rR4cjkL7IKn0f45d7bc")
+GEM = secret("AQ.Ab8RN6ISstDqv7WTi9A-K5XLF7vPDTd7qBQRA27NmVojy5uivg")
 
 
 def err_text(r):
