@@ -1,242 +1,54 @@
 
-import os
-import sys
-import json
-import base64
-import subprocess
-import requests
-from PIL import Image
+name: smoke-test
 
-OUT = "out"
-os.makedirs(OUT, exist_ok=True)
+on:
+  workflow_dispatch:
 
-results = {}
+permissions:
+  contents: read
 
-def get_secret(name):
-    value = os.environ.get(name, "").strip()
-    print(f"[{'OK' if value else 'MISSING'}] {name}")
-    return value
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
-CF_ACC = get_secret("CF_ACCOUNT_ID")
-CF_TOK = get_secret("CF_API_TOKEN")
-GEM = get_secret("GEMINI_API_KEY")
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-def test_gemini():
-    if not GEM:
-        return False, "Gemini key missing"
+      - name: Install dependencies
+        run: |
+          pip install requests pillow
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
 
-    base = "https://generativelanguage.googleapis.com/v1beta"
-    headers = {"x-goog-api-key": GEM}
+      - name: Check secrets
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          test -n "$CF_ACCOUNT_ID" || exit 1
+          test -n "$CF_API_TOKEN" || exit 1
+          test -n "$GEMINI_API_KEY" || exit 1
+          echo "All three secrets are available."
 
-    response = requests.get(
-        f"{base}/models?pageSize=200",
-        headers=headers,
-        timeout=30
-    )
+      - name: Run smoke test
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/smoke_test.py
 
-    print("Gemini model list:", response.status_code)
-
-    if not response.ok:
-        print(response.text[:300])
-        return False, "Model listing failed"
-
-    models = [
-        item["name"].replace("models/", "")
-        for item in response.json().get("models", [])
-        if "generateContent" in item.get(
-            "supportedGenerationMethods", []
-        )
-    ]
-
-    print("Available Flash models:",
-          [m for m in models if "flash" in m.lower()][:20])
-
-    candidates = [
-        "gemini-2.5-flash-lite",
-        "gemini-2.5-flash"
-    ]
-
-    candidates = [m for m in candidates if m in models]
-
-    body = {
-        "contents": [{
-            "parts": [{"text": "Reply with one word: OK"}]
-        }],
-        "generationConfig": {"maxOutputTokens": 10}
-    }
-
-    working = []
-
-    for model in candidates:
-        try:
-            r = requests.post(
-                f"{base}/models/{model}:generateContent",
-                headers=headers,
-                json=body,
-                timeout=60
-            )
-
-            print(f"{model}: HTTP {r.status_code}")
-
-            if r.ok:
-                working.append(model)
-            else:
-                print(r.text[:250])
-
-        except requests.RequestException as error:
-            print(type(error).__name__)
-
-    print("WORKING TEXT MODELS:", working)
-
-    return bool(working), ", ".join(working) or "No working model"
-
-
-IMG_PATH = os.path.join(OUT, "test_image.jpg")
-
-
-def test_cloudflare():
-    if not CF_ACC or not CF_TOK:
-        return False, "Cloudflare secrets missing"
-
-    url = (
-        f"https://api.cloudflare.com/client/v4/accounts/"
-        f"{CF_ACC}/ai/run/@cf/black-forest-labs/flux-1-schnell"
-    )
-
-    headers = {
-        "Authorization": f"Bearer {CF_TOK}",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "prompt": (
-            "Cinematic fantasy illustration, a lone traveler "
-            "before a glowing floating castle at dusk, "
-            "mist, purple and gold palette, dramatic lighting"
-        ),
-        "steps": 4
-    }
-
-    response = requests.post(
-        url,
-        headers=headers,
-        json=payload,
-        timeout=120
-    )
-
-    print("Cloudflare HTTP:", response.status_code)
-
-    if not response.ok:
-        print(response.text[:300])
-        return False, "Image generation failed"
-
-    if response.headers.get("content-type", "").startswith("image/"):
-        data = response.content
-    else:
-        data = base64.b64decode(
-            response.json()["result"]["image"]
-        )
-
-    with open(IMG_PATH, "wb") as file:
-        file.write(data)
-
-    image = Image.open(IMG_PATH)
-    print("Image saved:", image.size)
-
-    return True, f"{image.width}x{image.height}"
-
-
-def test_ffmpeg():
-    if not os.path.exists(IMG_PATH):
-        return False, "No image available"
-
-    output = os.path.join(OUT, "test_clip.mp4")
-
-    command = [
-        "ffmpeg", "-y",
-        "-loop", "1",
-        "-i", IMG_PATH,
-        "-t", "3",
-        "-vf",
-        "scale=1080:1920:force_original_aspect_ratio=increase,"
-        "crop=1080:1920,zoompan=z='min(zoom+0.0015,1.15)':"
-        "d=75:s=1080x1920:fps=25,format=yuv420p",
-        "-c:v", "libx264",
-        "-preset", "ultrafast",
-        "-pix_fmt", "yuv420p",
-        output
-    ]
-
-    process = subprocess.run(
-        command,
-        capture_output=True,
-        text=True
-    )
-
-    if process.returncode != 0:
-        print(process.stderr[-500:])
-        return False, "FFmpeg rendering failed"
-
-    probe = subprocess.run(
-        [
-            "ffprobe", "-v", "error",
-            "-select_streams", "v:0",
-            "-show_entries", "stream=width,height,duration",
-            "-of", "json", output
-        ],
-        capture_output=True,
-        text=True,
-        check=True
-    )
-
-    stream = json.loads(probe.stdout)["streams"][0]
-
-    width = stream["width"]
-    height = stream["height"]
-    duration = float(stream["duration"])
-
-    print("Rendered video:", stream)
-
-    passed = width == 1080 and height == 1920
-
-    return passed, f"{width}x{height}, {duration:.1f}s"
-
-
-tests = [
-    ("Gemini", test_gemini),
-    ("Cloudflare", test_cloudflare),
-    ("FFmpeg", test_ffmpeg)
-]
-
-for name, function in tests:
-    print(f"\n===== {name} =====")
-
-    try:
-        results[name] = function()
-    except Exception as error:
-        results[name] = (False, type(error).__name__)
-        print("Error:", type(error).__name__)
-
-
-print("\n===== FINAL SUMMARY =====")
-
-summary = []
-
-for name, (passed, message) in results.items():
-    status = "PASS" if passed else "FAIL"
-    line = f"{status} {name}: {message}"
-    print(line)
-    summary.append(line)
-
-summary_file = os.environ.get("GITHUB_STEP_SUMMARY")
-
-if summary_file:
-    with open(summary_file, "a") as file:
-        file.write(
-            "### Smoke Test Results\n\n"
-            + "\n".join(f"- {line}" for line in summary)
-            + "\n"
-        )
-
-sys.exit(0 if all(ok for ok, _ in results.values()) else 1)
+      - name: Upload test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-output
+          path: out/
+          retention-days: 3
