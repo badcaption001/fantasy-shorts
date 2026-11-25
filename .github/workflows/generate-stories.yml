@@ -1,0 +1,52 @@
+name: generate-stories
+
+# Manual only: it never runs by itself, so it cannot burn free-tier quota.
+on:
+  workflow_dispatch:
+    inputs:
+      salt:
+        description: "Optional text to get different story seeds"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+# Never run two story jobs at once (protects the free Gemini quota).
+concurrency:
+  group: generate-stories
+  cancel-in-progress: false
+
+jobs:
+  stories:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install requests
+
+      - name: Offline self-test (makes no API call)
+        run: python scripts/generate_stories.py --selftest
+
+      - name: Generate 3 stories (one Gemini request, max 5 attempts)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          STORY_SALT: ${{ inputs.salt }}
+        run: python scripts/generate_stories.py
+
+      - name: Verify out/stories.json
+        run: python scripts/generate_stories.py --verify out/stories.json
+
+      - name: Upload output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stories-output
+          path: out/
+          retention-days: 3
+          if-no-files-found: warn
