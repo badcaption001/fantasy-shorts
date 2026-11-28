@@ -9,7 +9,15 @@
           "note": "initial usage reported by owner"
         }
       ],
-      "runs": {}
+      "runs": {
+        "46115617974-1-51c73e": {
+          "at": "2026-11-28T06:13:47+00:00",
+          "mode": "probe",
+          "reserved": 28.66,
+          "spent": 0.0,
+          "status": "reserved"
+        }
+      }
     }
   },
   "schema_version": 1
