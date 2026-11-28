@@ -1,0 +1,16 @@
+{
+  "days": {
+    "2026-11-28": {
+      "external": 0.0,
+      "notes": [
+        {
+          "at": "2026-11-28T06:08:48+00:00",
+          "neurons": 0.0,
+          "note": "initial usage reported by owner"
+        }
+      ],
+      "runs": {}
+    }
+  },
+  "schema_version": 1
+}
