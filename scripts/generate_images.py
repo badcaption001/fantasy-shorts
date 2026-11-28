@@ -599,140 +599,323 @@ class Run:
         return None
 
 
+
 def run_pipeline(args, env, store, session, sleep=time.sleep, now_fn=utc_now):
     """Returns (exit_code, manifest). Exit: 0 ok, 1 failed, 2 config, 3 stopped by budget/time."""
     now = now_fn()
-    story = None if args.mode == "probe" else load_story(args.stories, args.story_index)
-    items = build_plan(story or {}, args.mode, args.max_scenes)
-    cons, like = plan_costs(items)
-    cap = min(args.cap, HARD_CAP)
-    manifest = {"model": MODEL_ID, "mode": args.mode, "story_id": (story or {}).get("id", "probe"),
-                "title": (story or {}).get("title", "probe"), "utc_day": utc_day(now),
-                "cap_neurons": cap, "plan_images": len(items),
-                "plan_cost_conservative": cons, "plan_cost_likely": like,
-                "dimensions": {"scene": [SCENE_W, SCENE_H], "portrait": [PORTRAIT_W, PORTRAIT_H]},
-                "items": [], "warnings": [], "status": "dry_run"}
-    print(f"Plan: {len(items)} images | reserve {cons} neurons (likely real cost ~{like}) | "
-          f"cap {cap:.0f}/day")
-    for i in items:
-        print(f"  - {i['id']}: {i['w']}x{i['h']} ref={i['use_ref']}")
-    if story and not (story.get("character_look") or "").strip():
-        manifest["warnings"].append("story has no character_look: no reference portrait")
 
-    if args.mode == "dry-run":
+    # Ledger initialization must not depend on stories.json.
+    if args.mode == "init-ledger-only":
+        story = None
+        items = []
+        cons, like = 0.0, 0.0
+    else:
+        story = None if args.mode == "probe" else load_story(
+            args.stories, args.story_index
+        )
+        items = build_plan(story or {}, args.mode, args.max_scenes)
+        cons, like = plan_costs(items)
+
+    cap = min(args.cap, HARD_CAP)
+
+    manifest = {
+        "model": MODEL_ID,
+        "mode": args.mode,
+        "story_id": (story or {}).get("id", "ledger-init" if args.mode == "init-ledger-only" else "probe"),
+        "title": (story or {}).get("title", "Ledger initialization" if args.mode == "init-ledger-only" else "probe"),
+        "utc_day": utc_day(now),
+        "cap_neurons": cap,
+        "plan_images": len(items),
+        "plan_cost_conservative": cons,
+        "plan_cost_likely": like,
+        "dimensions": {
+            "scene": [SCENE_W, SCENE_H],
+            "portrait": [PORTRAIT_W, PORTRAIT_H]
+        },
+        "items": [],
+        "warnings": [],
+        "status": "dry_run"
+    }
+
+    print(
+        f"Plan: {len(items)} images | reserve {cons} neurons "
+        f"(likely real cost ~{like}) | cap {cap:.0f}/day"
+    )
+
+    for item in items:
+        print(
+            f"  - {item['id']}: {item['w']}x{item['h']} "
+            f"ref={item['use_ref']}"
+        )
+
+    if story and not (story.get("character_look") or "").strip():
+        manifest["warnings"].append(
+            "story has no character_look: no reference portrait"
+        )
+
+    # SAFE LEDGER INITIALIZATION ONLY
+    # No stories, image planning, Cloudflare API calls or image generation.
+    if args.mode == "init-ledger-only":
+        if not args.init_ledger:
+            print(
+                "ERROR: Select initialize_ledger=true "
+                "for init-ledger-only."
+            )
+            return 2, manifest
+
         try:
-            st = StateStore(args.state_dir, args.state_remote, token=env.get("GITHUB_TOKEN"))
-            st.open(init=False)
-            led = st.load()
-            if led:
-                manifest["ledger_used_today"] = day_used(led, utc_day(now))
-                print(f"Ledger: {manifest['ledger_used_today']} neurons counted today (read-only)")
+            st = StateStore(
+                args.state_dir,
+                args.state_remote,
+                token=env.get("GITHUB_TOKEN")
+            )
+
+            st.open(init=True)
+
+            st.commit(
+                op_init(utc_day(now), args.assume_used),
+                "ledger: initialise",
+                utc_day(now),
+                None
+            )
+
         except LedgerError as e:
-            print(f"Ledger not available (fine for a dry run): {e}")
+            manifest["status"] = "ledger_error"
+            print(f"STOP: {e}")
+            return 3, manifest
+
+        manifest["status"] = "ledger_initialized"
+        print(f"Ledger initialized on branch '{STATE_BRANCH}'.")
+        print("No images generated.")
+        print("No Cloudflare API calls made.")
         return 0, manifest
 
-    # ---- live modes: every safety check happens before the first API call ----
+    # DRY RUN: NO API CALLS AND NO LEDGER WRITES
+    if args.mode == "dry-run":
+        print("DRY RUN: no API calls and no ledger writes.")
+        return 0, manifest
+
+    # LIVE MODES: SAFETY CHECKS BEFORE API CALLS
     if not env.get("CF_ACCOUNT_ID") or not env.get("CF_API_TOKEN"):
-        print("ERROR: CF_ACCOUNT_ID and CF_API_TOKEN must be set as GitHub Secrets.")
+        print(
+            "ERROR: CF_ACCOUNT_ID and CF_API_TOKEN "
+            "must be set as GitHub Secrets."
+        )
         return 2, manifest
+
     if args.cap > HARD_CAP:
-        print(f"ERROR: --cap cannot exceed the {HARD_CAP:.0f}-neuron hard cap.")
+        print(
+            f"ERROR: --cap cannot exceed the "
+            f"{HARD_CAP:.0f}-neuron hard cap."
+        )
         return 2, manifest
+
     if in_reset_blackout(now):
         manifest["status"] = "reset_window"
-        print("STOP: within 5 minutes of the 00:00 UTC quota reset. Try again later.")
+        print(
+            "STOP: within 5 minutes of the 00:00 UTC quota reset. "
+            "Try again later."
+        )
         return 3, manifest
 
     run = Run(args, env, store, session, sleep, now_fn)
     run.day = utc_day(now)
     manifest["run_key"] = run.run_key
     run.max_attempts = 2 * len(items)
+
     try:
         store.open(init=args.init_ledger)
+
         if args.init_ledger:
-            store.commit(op_init(run.day, args.assume_used), "ledger: initialise", run.day, None)
+            store.commit(
+                op_init(run.day, args.assume_used),
+                "ledger: initialise",
+                run.day,
+                None
+            )
         elif store.load() is None:
-            raise LedgerError("ledger file not found on the state branch; initialise it first")
+            raise LedgerError(
+                "ledger file not found on the state branch; initialise it first"
+            )
+
         if args.add_external > 0:
-            store.commit(op_external(run.day, args.add_external, "owner-reported external usage"),
-                         "ledger: external usage", run.day, None, allow_external=True)
-        led = store.commit(op_reserve(run.day, run.run_key, cons, cap, args.mode),
-                           f"ledger: reserve {run.run_key}", run.day, run.run_key)
+            store.commit(
+                op_external(
+                    run.day,
+                    args.add_external,
+                    "owner-reported external usage"
+                ),
+                "ledger: external usage",
+                run.day,
+                None,
+                allow_external=True
+            )
+
+        led = store.commit(
+            op_reserve(run.day, run.run_key, cons, cap, args.mode),
+            f"ledger: reserve {run.run_key}",
+            run.day,
+            run.run_key
+        )
+
     except BudgetExceeded as e:
         manifest["status"] = "budget_stop_before_start"
         print(f"STOP (nothing was generated or spent): {e}")
         return 3, manifest
+
     except LedgerError as e:
         manifest["status"] = "ledger_error"
         print(f"STOP (fail closed, nothing was generated): {e}")
         return 3, manifest
+
     manifest["ledger_used_after_reserve"] = day_used(led, run.day)
-    print(f"Reserved {cons} neurons for run {run.run_key}; "
-          f"ledger now {manifest['ledger_used_after_reserve']}/{cap:.0f} today")
+
+    print(
+        f"Reserved {cons} neurons for run {run.run_key}; "
+        f"ledger now {manifest['ledger_used_after_reserve']}/{cap:.0f} today"
+    )
 
     out_dir = args.out
     os.makedirs(out_dir, exist_ok=True)
+
     bseed = base_seed(manifest["story_id"])
     ref_bytes, saved, code, consecutive_failures = None, [], 0, 0
+
     try:
         for item in items:
-            rec = {"id": item["id"], "kind": item["kind"], "width": item["w"], "height": item["h"],
-                   "used_reference": item["use_ref"], "attempts": 0, "status": "failed",
-                   "neurons_conservative": 0.0, "problems": [], "notes": [],
-                   "prompt": item["prompt"], "file": None}
+            rec = {
+                "id": item["id"],
+                "kind": item["kind"],
+                "width": item["w"],
+                "height": item["h"],
+                "used_reference": item["use_ref"],
+                "attempts": 0,
+                "status": "failed",
+                "neurons_conservative": 0.0,
+                "problems": [],
+                "notes": [],
+                "prompt": item["prompt"],
+                "file": None
+            }
+
             manifest["items"].append(rec)
+
             if item["use_ref"] and not ref_bytes:
-                rec["problems"].append("reference portrait missing; scene skipped")
+                rec["problems"].append(
+                    "reference portrait missing; scene skipped"
+                )
                 rec["status"] = "skipped"
                 continue
+
             res = run.call_with_retries(item, ref_bytes, rec, bseed)
+
             if res is None:
-                print(f"FAILED {item['id']}: {rec['problems'][-1] if rec['problems'] else 'unknown'}")
+                print(
+                    f"FAILED {item['id']}: "
+                    f"{rec['problems'][-1] if rec['problems'] else 'unknown'}"
+                )
                 consecutive_failures += 1
                 code = 1
+
                 if item["kind"] == "portrait":
-                    raise RunStop("failed", "reference portrait failed; stopping so no neurons "
-                                            "are spent on scenes without a consistent character")
+                    raise RunStop(
+                        "failed",
+                        "reference portrait failed; stopping so no neurons "
+                        "are spent on scenes without a consistent character"
+                    )
+
                 if consecutive_failures >= 2:
-                    raise RunStop("failed", "two images failed in a row; stopping (server looks "
-                                            "unhealthy)")
+                    raise RunStop(
+                        "failed",
+                        "two images failed in a row; stopping (server looks unhealthy)"
+                    )
+
                 continue
+
             consecutive_failures = 0
             im, jpg = res
+
             path = os.path.join(out_dir, f"{item['id']}.jpg")
+
             with open(path, "wb") as f:
                 f.write(jpg)
-            rec.update(status="ok", file=os.path.basename(path), bytes=len(jpg),
-                       sha256=hashlib.sha256(jpg).hexdigest())
+
+            rec.update(
+                status="ok",
+                file=os.path.basename(path),
+                bytes=len(jpg),
+                sha256=hashlib.sha256(jpg).hexdigest()
+            )
+
             saved.append((item["id"], path))
+
             if item["kind"] == "portrait":
                 small = im.resize((REF_SEND, REF_SEND), Image.LANCZOS)
                 ref_bytes = encode_jpeg(small)
-            print(f"ok {item['id']} ({rec['attempts']} attempt(s), {rec['neurons_conservative']} n)")
+
+            print(
+                f"ok {item['id']} ({rec['attempts']} attempt(s), "
+                f"{rec['neurons_conservative']} n)"
+            )
+
         manifest["status"] = "complete" if code == 0 else "partial_failures"
+
     except RunStop as e:
         manifest["status"] = e.status
         manifest["warnings"].append(str(e))
         print(f"STOP: {e}")
-        code = 3 if e.status in ("budget_stop", "quota_stop", "day_changed", "reset_window") else 1
+
+        code = 3 if e.status in (
+            "budget_stop",
+            "quota_stop",
+            "day_changed",
+            "reset_window"
+        ) else 1
+
     finally:
-        try:   # settle at the real attempted cost; if this fails the reservation stays counted
-            end = store.commit(op_settle(run.day, run.run_key, run.spent),
-                               f"ledger: settle {run.run_key}", run.day, run.run_key)
+        try:
+            end = store.commit(
+                op_settle(run.day, run.run_key, run.spent),
+                f"ledger: settle {run.run_key}",
+                run.day,
+                run.run_key
+            )
             manifest["ledger_used_final"] = day_used(end, run.day)
-        except Exception as e:  # noqa: BLE001
-            manifest["warnings"].append(f"settle failed ({type(e).__name__}); full reservation "
-                                        f"stays counted, which is safe")
-            print("WARNING: could not settle the ledger; reservation stays counted (safe).")
+
+        except Exception as e:
+            manifest["warnings"].append(
+                f"settle failed ({type(e).__name__}); "
+                "full reservation stays counted, which is safe"
+            )
+            print(
+                "WARNING: could not settle the ledger; "
+                "reservation stays counted (safe)."
+            )
+
         manifest["neurons_spent_conservative"] = run.spent
         manifest["attempts_total"] = run.attempts
-        with open(os.path.join(out_dir, "images_manifest.json"), "w", encoding="utf-8") as f:
+
+        with open(
+            os.path.join(out_dir, "images_manifest.json"),
+            "w",
+            encoding="utf-8"
+        ) as f:
             json.dump(manifest, f, indent=2, ensure_ascii=False)
+
         if saved:
-            contact_sheet(saved, os.path.join(out_dir, "contact_sheet.jpg"))
-    print(f"Done: status={manifest['status']} attempts={run.attempts} "
-          f"spent~{run.spent} neurons (conservative)")
+            contact_sheet(
+                saved,
+                os.path.join(out_dir, "contact_sheet.jpg")
+            )
+
+    print(
+        f"Done: status={manifest['status']} "
+        f"attempts={run.attempts} "
+        f"spent~{run.spent} neurons (conservative)"
+    )
+
     return code, manifest
+
 
 
 # -------------------------------------------------------------- selftest ----
@@ -792,7 +975,10 @@ def selftest():
 # ------------------------------------------------------------------ main ----
 def parse_args(argv):
     ap = argparse.ArgumentParser(description="FLUX.2 klein image generation (free tier)")
-    ap.add_argument("--mode", choices=["dry-run", "probe", "story"], default="dry-run")
+    ap.add_argument(
+    "--mode",
+    choices=["dry-run", "init-ledger-only", "probe", "story"],
+    default="dry-run")
     ap.add_argument("--stories", default="data/stories.json")
     ap.add_argument("--story-index", type=int, default=1)
     ap.add_argument("--max-scenes", type=int, default=6)
