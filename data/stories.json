@@ -1,0 +1,326 @@
+{
+  "meta": {
+    "schema_version": 1,
+    "model": "gemini-3.1-flash-lite",
+    "generated_at": "2026-11-25T08:35:17+00:00",
+    "attempts": 1,
+    "json_schema_mode": true,
+    "token_usage": {
+      "prompt": 468,
+      "output": 2453,
+      "thoughts": 0,
+      "total": 2921
+    },
+    "seeds": [
+      {
+        "setting": "a village that only wakes at night",
+        "hero": "a thief with a borrowed name",
+        "twist": "the guide lied to save them",
+        "tone": "darkly whimsical"
+      },
+      {
+        "setting": "a floating market above storm clouds",
+        "hero": "a young cartographer",
+        "twist": "the gift is secretly a debt",
+        "tone": "haunting"
+      },
+      {
+        "setting": "a clockwork forest where the trees tick",
+        "hero": "a lantern keeper",
+        "twist": "time was running backward",
+        "tone": "bittersweet"
+      }
+    ],
+    "warnings": [],
+    "words_per_second_assumed": 2.45
+  },
+  "stories": [
+    {
+      "id": "20261125-s1-48edb1",
+      "title": "The Moonlit Thief",
+      "genre": "Dark Fantasy",
+      "logline": "A thief in the night village discovers his guide has been keeping a dark secret to protect him.",
+      "character_look": "A slender youth in ragged indigo cloaks, wearing a tarnished bronze mask covering the lower half of his face.",
+      "hook": "The sun is a myth in Oakhaven.",
+      "full_narration": "The sun is a myth in Oakhaven. Here, we wake when the shadows lengthen. I am Kael, or so I call myself. I steal secrets from the archives of the dreamless. My guide, Vane, promised me the key to my past hidden within this vault. The stone groaned as I pried it open. Inside was not treasure, but a mirror reflecting only my hollow eyes. I turned to Vane, but he looked away. The secret was not my heritage, but my end. He lied about the key to keep me from realizing I was never alive at all. Follow for the next tale. Follow for more legends from the hidden realms.",
+      "estimated_duration_sec": 47.1,
+      "scene_count": 6,
+      "scenes": [
+        {
+          "scene": 1,
+          "description": "A village of stone towers lit only by bioluminescent moss at night.",
+          "narration": "The sun is a myth in Oakhaven. Here, we wake when the shadows lengthen.",
+          "image_prompt": "Low angle shot of stone towers draped in glowing blue moss, dim moonlight casting long shadows, cinematic, mysterious, photorealistic.",
+          "character_visible": false,
+          "image_prompt_final": "Low angle shot of stone towers draped in glowing blue moss, dim moonlight casting long shadows, cinematic, mysterious, photorealistic, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 6.0
+        },
+        {
+          "scene": 2,
+          "description": "The thief creeping along a rooftop.",
+          "narration": "I am Kael, or so I call myself. I steal secrets from the archives of the dreamless.",
+          "image_prompt": "Medium shot of a cloaked figure crouched on a slate roof, moonlight reflecting off a bronze mask, moody atmosphere, sharp focus.",
+          "character_visible": true,
+          "image_prompt_final": "A slender youth in ragged indigo cloaks, wearing a tarnished bronze mask covering the lower half of his face, Medium shot of a cloaked figure crouched on a slate roof, moonlight reflecting off a bronze mask, moody atmosphere, sharp focus, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 7.2
+        },
+        {
+          "scene": 3,
+          "description": "An old man pointing toward a vault.",
+          "narration": "My guide, Vane, promised me the key to my past hidden within this vault.",
+          "image_prompt": "Close up of an elderly man with withered hands gesturing toward a massive stone door, cold blue lighting, intricate textures.",
+          "character_visible": true,
+          "image_prompt_final": "A slender youth in ragged indigo cloaks, wearing a tarnished bronze mask covering the lower half of his face, Close up of an elderly man with withered hands gesturing toward a massive stone door, cold blue lighting, intricate textures, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 6.0
+        },
+        {
+          "scene": 4,
+          "description": "Kael opening the vault door.",
+          "narration": "The stone groaned as I pried it open. Inside was not treasure, but a mirror reflecting only my hollow eyes.",
+          "image_prompt": "Close up of a hand pushing a heavy stone door, internal light spilling out, ethereal atmosphere, cinematic depth of field.",
+          "character_visible": true,
+          "image_prompt_final": "A slender youth in ragged indigo cloaks, wearing a tarnished bronze mask covering the lower half of his face, Close up of a hand pushing a heavy stone door, internal light spilling out, ethereal atmosphere, cinematic depth of field, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 8.5
+        },
+        {
+          "scene": 5,
+          "description": "Vane standing behind Kael with a sad expression.",
+          "narration": "I turned to Vane, but he looked away. The secret was not my heritage, but my end.",
+          "image_prompt": "Medium shot of the guide looking down, shadowy background, melancholic lighting, emotional weight.",
+          "character_visible": true,
+          "image_prompt_final": "A slender youth in ragged indigo cloaks, wearing a tarnished bronze mask covering the lower half of his face, Medium shot of the guide looking down, shadowy background, melancholic lighting, emotional weight, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 7.2
+        },
+        {
+          "scene": 6,
+          "description": "The village fading as dawn approaches.",
+          "narration": "He lied about the key to keep me from realizing I was never alive at all. Follow for the next tale.",
+          "image_prompt": "Wide shot of the stone village dissolving into grey mist, sunrise beginning to burn the horizon, dreamlike aesthetic.",
+          "character_visible": false,
+          "image_prompt_final": "Wide shot of the stone village dissolving into grey mist, sunrise beginning to burn the horizon, dreamlike aesthetic, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 8.9
+        }
+      ],
+      "music_mood": "Ethereal, dark, whimsical, slow tempo",
+      "sound_effects": [
+        "Soft footsteps on stone",
+        "Distant chime of a clock",
+        "Low wind howling",
+        "Stone sliding sound"
+      ],
+      "cta": "Follow for more legends from the hidden realms.",
+      "youtube": {
+        "title": "The Thief Who Stole His Own Soul",
+        "description": "A thief in a nocturnal village searches for his past, only to find a terrifying truth about his own existence."
+      },
+      "instagram": {
+        "caption": "What if your memories were never yours? Explore the shadows of Oakhaven and discover the secret behind the mask. Would you want to know the truth?"
+      },
+      "hashtags": [
+        "#darkfantasy",
+        "#shortstories",
+        "#mystery",
+        "#fairytales",
+        "#narrative",
+        "#storytelling",
+        "#originalfiction",
+        "#cinematic",
+        "#mythology",
+        "#fantasyart",
+        "#Fantasy",
+        "#Shorts"
+      ]
+    },
+    {
+      "id": "20261125-s2-63fa2f",
+      "title": "The Debt of the Clouds",
+      "genre": "Haunting Fantasy",
+      "logline": "A cartographer receives a gift from the sky market, only to realize it is a heavy debt.",
+      "character_look": "A young man wearing a stained leather vest, brass goggles resting on his forehead, and stained ink-stained hands.",
+      "hook": "Have you ever traded your voice for a map of heaven?",
+      "full_narration": "Have you ever traded your voice for a map of heaven? I am Elian. I chart the winds above the Great Tempest. Today, a merchant gifted me a golden compass. It pointed not to north, but to the debts I owe the sky spirits. The merchant vanished into the mist. Suddenly, the chains of the market began to snap one by one. Every step I took required a sacrifice. The map I drew was a contract written in my own blood. I am the debt collector now. Follow for the next legend. Follow to see what happens when the sky falls.",
+      "estimated_duration_sec": 43.0,
+      "scene_count": 6,
+      "scenes": [
+        {
+          "scene": 1,
+          "description": "A floating market suspended by iron chains in the clouds.",
+          "narration": "Have you ever traded your voice for a map of heaven?",
+          "image_prompt": "Wide shot of wooden stalls floating on platforms among thick storm clouds, golden hour light, cinematic, vast scale.",
+          "character_visible": false,
+          "image_prompt_final": "Wide shot of wooden stalls floating on platforms among thick storm clouds, golden hour light, cinematic, vast scale, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 4.8
+        },
+        {
+          "scene": 2,
+          "description": "The cartographer at a stall.",
+          "narration": "I am Elian. I chart the winds above the Great Tempest. Today, a merchant gifted me a golden compass.",
+          "image_prompt": "Medium shot of the cartographer looking at a shining golden compass, rain clouds in background, dark moody lighting.",
+          "character_visible": true,
+          "image_prompt_final": "A young man wearing a stained leather vest, brass goggles resting on his forehead, and stained ink-stained hands, Medium shot of the cartographer looking at a shining golden compass, rain clouds in background, dark moody lighting, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 8.1
+        },
+        {
+          "scene": 3,
+          "description": "The compass spinning wildly.",
+          "narration": "It pointed not to north, but to the debts I owe the sky spirits.",
+          "image_prompt": "Close up of a spinning golden compass needle, raindrops hitting the brass, storm clouds swirling around, dramatic.",
+          "character_visible": true,
+          "image_prompt_final": "A young man wearing a stained leather vest, brass goggles resting on his forehead, and stained ink-stained hands, Close up of a spinning golden compass needle, raindrops hitting the brass, storm clouds swirling around, dramatic, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 6.0
+        },
+        {
+          "scene": 4,
+          "description": "The clouds turning black and heavy.",
+          "narration": "The merchant vanished into the mist. Suddenly, the chains of the market began to snap one by one.",
+          "image_prompt": "Low angle of iron chains breaking, debris falling into dark clouds, intense lighting, fast motion blur.",
+          "character_visible": false,
+          "image_prompt_final": "Low angle of iron chains breaking, debris falling into dark clouds, intense lighting, fast motion blur, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 7.6
+        },
+        {
+          "scene": 5,
+          "description": "Elian looking at his hands.",
+          "narration": "Every step I took required a sacrifice. The map I drew was a contract written in my own blood.",
+          "image_prompt": "Close up of hands clutching a parchment map, ink blurring with red, storm light, cinematic composition.",
+          "character_visible": true,
+          "image_prompt_final": "A young man wearing a stained leather vest, brass goggles resting on his forehead, and stained ink-stained hands, Close up of hands clutching a parchment map, ink blurring with red, storm light, cinematic composition, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 8.1
+        },
+        {
+          "scene": 6,
+          "description": "Elian falling into the clouds.",
+          "narration": "I am the debt collector now. Follow for the next legend.",
+          "image_prompt": "Wide shot of a figure falling through thick clouds, light fading, high contrast, surreal, emotional.",
+          "character_visible": true,
+          "image_prompt_final": "A young man wearing a stained leather vest, brass goggles resting on his forehead, and stained ink-stained hands, Wide shot of a figure falling through thick clouds, light fading, high contrast, surreal, emotional, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 4.8
+        }
+      ],
+      "music_mood": "Haunting, orchestral, tense, rising tempo",
+      "sound_effects": [
+        "Wind rushing",
+        "Thunder rumbling",
+        "Heavy chain breaking",
+        "Metallic scratching"
+      ],
+      "cta": "Follow to see what happens when the sky falls.",
+      "youtube": {
+        "title": "The Price of the Floating Market",
+        "description": "Elian seeks to chart the unknown, but the gift he receives comes with a price that the heavens demand back."
+      },
+      "instagram": {
+        "caption": "Every gift comes with a hidden cost. Would you trade your freedom to see the edge of the world? Join the voyage."
+      },
+      "hashtags": [
+        "#fantasyworld",
+        "#skykingdom",
+        "#shortfilm",
+        "#haunting",
+        "#darkfantasy",
+        "#writingcommunity",
+        "#visualstorytelling",
+        "#mystery",
+        "#adventure",
+        "#originaltale",
+        "#Fantasy",
+        "#Shorts"
+      ]
+    },
+    {
+      "id": "20261125-s3-f685fb",
+      "title": "The Ticking Forest",
+      "genre": "Bittersweet Fantasy",
+      "logline": "A lantern keeper in a clockwork forest realizes that time is rewinding to an irreversible end.",
+      "character_look": "An older man with silver hair, wearing a heavy wax-stained coat and carrying a glowing lantern.",
+      "hook": "Does time move forward or does it just lose its way?",
+      "full_narration": "Does time move forward or does it just lose its way? I am Silas. I wind the trees. If I stop, the world falls silent. Today, a leaf fell upward. The gears are turning in reverse. My youth is returning, but my memory is fading with every second. The forest is healing, but it is erasing every mistake I ever made. I was the only one who remembered the beginning. Follow for more tales. Follow for the next stop in this infinite journey.",
+      "estimated_duration_sec": 35.7,
+      "scene_count": 6,
+      "scenes": [
+        {
+          "scene": 1,
+          "description": "A forest where every tree is made of gears and brass pipes.",
+          "narration": "Does time move forward or does it just lose its way?",
+          "image_prompt": "Wide shot of a forest with metal trees and glowing gears, dark atmosphere, bronze highlights, mechanical detail.",
+          "character_visible": false,
+          "image_prompt_final": "Wide shot of a forest with metal trees and glowing gears, dark atmosphere, bronze highlights, mechanical detail, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 4.8
+        },
+        {
+          "scene": 2,
+          "description": "The lantern keeper walking past a ticking trunk.",
+          "narration": "I am Silas. I wind the trees. If I stop, the world falls silent.",
+          "image_prompt": "Medium shot of an elderly man with a lantern winding a large brass gear on a tree trunk, golden light, intricate.",
+          "character_visible": true,
+          "image_prompt_final": "An older man with silver hair, wearing a heavy wax-stained coat and carrying a glowing lantern, Medium shot of an elderly man with a lantern winding a large brass gear on a tree trunk, golden light, intricate, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 6.0
+        },
+        {
+          "scene": 3,
+          "description": "A leaf falling upward into a branch.",
+          "narration": "Today, a leaf fell upward. The gears are turning in reverse.",
+          "image_prompt": "Close up of a metallic leaf floating back into a branch, mechanical sparks, ethereal lighting, sharp focus.",
+          "character_visible": false,
+          "image_prompt_final": "Close up of a metallic leaf floating back into a branch, mechanical sparks, ethereal lighting, sharp focus, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 4.8
+        },
+        {
+          "scene": 4,
+          "description": "Silas looking at his clock.",
+          "narration": "My youth is returning, but my memory is fading with every second.",
+          "image_prompt": "Close up of a silver pocket watch spinning backwards, man's face in soft reflection, blurry background, emotional.",
+          "character_visible": true,
+          "image_prompt_final": "An older man with silver hair, wearing a heavy wax-stained coat and carrying a glowing lantern, Close up of a silver pocket watch spinning backwards, man's face in soft reflection, blurry background, emotional, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 5.2
+        },
+        {
+          "scene": 5,
+          "description": "The forest light turning soft and warm.",
+          "narration": "The forest is healing, but it is erasing every mistake I ever made.",
+          "image_prompt": "Wide shot of the mechanical forest glowing with warm light, soft focus, serene, beautiful.",
+          "character_visible": false,
+          "image_prompt_final": "Wide shot of the mechanical forest glowing with warm light, soft focus, serene, beautiful, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 5.6
+        },
+        {
+          "scene": 6,
+          "description": "Silas vanishing into golden dust.",
+          "narration": "I was the only one who remembered the beginning. Follow for more tales.",
+          "image_prompt": "Silhouette of a man fading into golden particles, brass tree shadows, sunset lighting, poignant finish.",
+          "character_visible": true,
+          "image_prompt_final": "An older man with silver hair, wearing a heavy wax-stained coat and carrying a glowing lantern, Silhouette of a man fading into golden particles, brass tree shadows, sunset lighting, poignant finish, cinematic fantasy illustration, painterly, dramatic lighting, volumetric mist, rich teal and gold palette, vertical 9:16 composition, no text, no watermark",
+          "est_seconds": 5.6
+        }
+      ],
+      "music_mood": "Bittersweet, piano, clockwork ticking, soft",
+      "sound_effects": [
+        "Mechanical ticking",
+        "Gears grinding",
+        "Soft wind",
+        "Bell chiming"
+      ],
+      "cta": "Follow for the next stop in this infinite journey.",
+      "youtube": {
+        "title": "The Forest Where Time Flows Backward",
+        "description": "Silas maintains the clockwork forest, until he discovers that time is reversing and taking his memories with it."
+      },
+      "instagram": {
+        "caption": "If you could relive your life in reverse, would you stay the same? Unravel the secrets of the ticking woods."
+      },
+      "hashtags": [
+        "#fantasy",
+        "#clockwork",
+        "#shortfiction",
+        "#bittersweet",
+        "#timetravel",
+        "#atmospheric",
+        "#creativewriting",
+        "#magic",
+        "#myth",
+        "#narrative",
+        "#Shorts"
+      ]
+    }
+  ]
+}
