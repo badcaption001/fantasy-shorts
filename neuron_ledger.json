@@ -21,8 +21,8 @@
           "at": "2026-11-28T06:22:42+00:00",
           "mode": "story",
           "reserved": 1083.88,
-          "spent": 0.0,
-          "status": "reserved"
+          "spent": 1083.88,
+          "status": "settled"
         }
       }
     }
