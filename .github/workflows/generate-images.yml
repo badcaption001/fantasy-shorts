@@ -1,0 +1,85 @@
+name: generate-images
+
+# Manual only. No schedule, no push/PR triggers, nothing automatic.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "dry-run = plan only (0 neurons) | probe = one 256x256 image | story = portrait + scenes"
+        type: choice
+        options: [dry-run, probe, story]
+        default: dry-run
+      story_index:
+        description: "Which story in data/stories.json (1-3)"
+        type: choice
+        options: ["1", "2", "3"]
+        default: "1"
+      max_scenes:
+        description: "Scenes to generate (1-8). The test uses 6."
+        type: string
+        default: "6"
+      initialize_ledger:
+        description: "FIRST RUN ONLY: create the usage ledger on the 'state' branch"
+        type: boolean
+        default: false
+      assume_used_today:
+        description: "Only with initialize_ledger: neurons already used today (see Cloudflare dashboard)"
+        type: string
+        default: "0"
+      add_external_neurons:
+        description: "Neurons used today outside this workflow (e.g. smoke test). Usually 0."
+        type: string
+        default: "0"
+
+# contents: write is needed ONLY to push the usage ledger to the 'state' branch.
+permissions:
+  contents: write
+
+# One Cloudflare job at a time, so two runs can never spend the same quota.
+concurrency:
+  group: cloudflare-neurons
+  cancel-in-progress: false
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install requests pillow
+
+      - name: Offline self-test (no API call, no network)
+        run: python scripts/generate_images.py --selftest
+
+      - name: Generate images
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODE: ${{ inputs.mode }}
+          STORY_INDEX: ${{ inputs.story_index }}
+          MAX_SCENES: ${{ inputs.max_scenes }}
+          INIT_LEDGER: ${{ inputs.initialize_ledger }}
+          ASSUME_USED: ${{ inputs.assume_used_today }}
+          ADD_EXTERNAL: ${{ inputs.add_external_neurons }}
+        run: |
+          ARGS=(--mode "$MODE" --story-index "$STORY_INDEX" --max-scenes "$MAX_SCENES" \
+                --assume-used "$ASSUME_USED" --add-external "$ADD_EXTERNAL")
+          if [ "$INIT_LEDGER" = "true" ]; then ARGS+=(--init-ledger); fi
+          python scripts/generate_images.py "${ARGS[@]}"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: images-output
+          path: out/images/
+          retention-days: 3
+          if-no-files-found: warn
